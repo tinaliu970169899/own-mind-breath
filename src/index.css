@@ -1,0 +1,51 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: "Georgia", serif;
+  --font-sans: "Helvetica Neue", Arial, sans-serif;
+
+  /* Clean Minimalism Palette */
+  --color-clean-bg: #F7F5F2;
+  --color-clean-accent: #7C8974;
+  --color-clean-primary: #2C2C2C;
+  --color-clean-secondary: #5E5E5E;
+  --color-clean-card: #FAFAFA;
+  --color-clean-card-hover: #F4F5F2;
+  --color-clean-border: #E5E1DA;
+
+  /* Tiffany Green Palette - Muted for better integration */
+  --color-tiffany: #A8D1CD;
+  --color-tiffany-dark: #7CA6A2;
+  --color-tiffany-light: #F2F7F6;
+
+  --shadow-clean: 0 10px 30px rgba(124, 137, 116, 0.08);
+  --shadow-tiffany: 0 10px 30px rgba(129, 216, 208, 0.15);
+}
+
+@layer base {
+  body {
+    @apply bg-clean-bg text-clean-primary font-sans antialiased selection:bg-clean-accent/20;
+  }
+}
+
+@layer utilities {
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    @apply bg-clean-accent/20 rounded-full hover:bg-clean-accent/40;
+  }
+}
+
+.minimal-card {
+  @apply bg-white rounded-3xl shadow-clean p-8 transition-all duration-300;
+}
+
+.info-stripe-card {
+  @apply p-6 border-l-3 border-clean-border bg-clean-card transition-all duration-300 cursor-pointer hover:border-clean-accent hover:bg-clean-card-hover;
+}
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
