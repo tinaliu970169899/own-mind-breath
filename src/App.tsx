@@ -126,12 +126,22 @@ const SectionHeading = ({ title, subtitle, light }: { title: string; subtitle?: 
 
 const DailyCheckIn = ({ onBack }: { onBack: () => void }) => {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)); // Start at April 2026
+  const [userName, setUserName] = useState(() => localStorage.getItem("mindfulness_user_name") || "");
+  const [isEditingName, setIsEditingName] = useState(!localStorage.getItem("mindfulness_user_name"));
   const [checkIns, setCheckIns] = useState<Record<string, boolean>>(() => {
     const saved = localStorage.getItem("mindfulness_checkins");
     return saved ? JSON.parse(saved) : {};
   });
   const [showDing, setShowDing] = useState(false);
-  const [milestone, setMilestone] = useState<number | null>(null);
+  const [milestoneInfo, setMilestoneInfo] = useState<{ day: number; quote: string } | null>(null);
+
+  const milestoneQuotes = [
+    "「正如呼吸，練習也是一種自然的循環。感謝您這五天的堅持。」",
+    "「這五天裡，您成功地在喧囂中保留了一片屬於自己的空地。」",
+    "「覺察這件事，不需要完美，只需要在場。恭喜您在場了五天。」",
+    "「心的呼吸不需要用力，只需要留意。這五天的累積，是您對自己最好的溫柔。」",
+    "「五天的練習，是連結身與心的五座橋樑。您正走在正確的道路上。」"
+  ];
 
   const minDate = new Date(2026, 3, 1); // April 2026
   const maxDate = new Date(2026, 11, 31); // Dec 2026
@@ -139,6 +149,12 @@ const DailyCheckIn = ({ onBack }: { onBack: () => void }) => {
   useEffect(() => {
     localStorage.setItem("mindfulness_checkins", JSON.stringify(checkIns));
   }, [checkIns]);
+
+  useEffect(() => {
+    if (userName) {
+      localStorage.setItem("mindfulness_user_name", userName);
+    }
+  }, [userName]);
 
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(monthStart);
@@ -166,7 +182,8 @@ const DailyCheckIn = ({ onBack }: { onBack: () => void }) => {
       // Milestone check (every 5 days)
       const newTotal = totalDays + 1;
       if (newTotal > 0 && newTotal % 5 === 0) {
-        setMilestone(newTotal);
+        const randomQuote = milestoneQuotes[Math.floor(Math.random() * milestoneQuotes.length)];
+        setMilestoneInfo({ day: newTotal, quote: randomQuote });
       }
     }
   };
@@ -212,8 +229,8 @@ const DailyCheckIn = ({ onBack }: { onBack: () => void }) => {
 
       {/* Milestone Modal */}
       <Modal 
-        isOpen={milestone !== null} 
-        onClose={() => setMilestone(null)}
+        isOpen={milestoneInfo !== null} 
+        onClose={() => setMilestoneInfo(null)}
         title="🎉 覺察里程碑"
       >
         <div className="text-center space-y-6 py-4">
@@ -221,28 +238,61 @@ const DailyCheckIn = ({ onBack }: { onBack: () => void }) => {
             <PartyPopper size={48} />
           </div>
           <div className="space-y-2">
-            <h4 className="text-2xl font-serif text-clean-primary">恭喜！您已完成 {milestone} 天練習</h4>
-            <p className="text-sm text-clean-secondary leading-relaxed">
-              「每一步微小的覺察，都是通往內在平靜的基石。」<br />
-              在這個繁忙的世界中，您為自己留下了這份專注，真的很棒。
+            <h4 className="text-2xl font-serif text-clean-primary">恭喜 {userName}！</h4>
+            <p className="text-lg font-serif text-tiffany font-bold">您已完成 {milestoneInfo?.day} 天練習</p>
+            <p className="text-sm text-clean-secondary leading-relaxed px-4">
+              在這個繁忙的世界中，您為自己留下了這份專注，真的很棒。請繼續溫柔地對待心靈。
             </p>
           </div>
-          <div className="p-6 bg-clean-bg rounded-2xl border border-dashed border-clean-border flex gap-4 items-start text-left">
+          <div className="p-6 bg-clean-bg rounded-2xl border border-dashed border-clean-border flex gap-4 items-start text-left mx-2">
             <Quote className="text-tiffany shrink-0 mt-1" size={16} />
-            <p className="text-sm italic font-serif leading-relaxed">
-              身心合一，是在動盪中找回平穩的唯一途徑。請繼續溫柔地對待自己。
+            <p className="text-sm italic font-serif leading-relaxed text-clean-primary">
+              {milestoneInfo?.quote}
             </p>
           </div>
         </div>
       </Modal>
 
       <div className="max-w-4xl mx-auto">
-        <button 
-          onClick={onBack}
-          className="flex items-center gap-2 text-clean-accent font-bold mb-12 hover:translate-x-1 transition-transform group uppercase text-[10px] tracking-[0.2em]"
-        >
-          <ArrowLeft size={16} /> Back to Mindfulness
-        </button>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-6">
+          <button 
+            onClick={onBack}
+            className="flex items-center gap-2 text-clean-accent font-bold hover:translate-x-1 transition-transform group uppercase text-[10px] tracking-[0.2em]"
+          >
+            <ArrowLeft size={16} /> Back to Home
+          </button>
+          
+          {isEditingName ? (
+            <div className="flex items-center gap-2 w-full sm:w-fit bg-white p-1 rounded-full border border-tiffany/30 shadow-sm">
+              <input 
+                type="text" 
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="輸入您的名字..."
+                className="bg-transparent px-4 py-1.5 focus:outline-none text-sm font-medium w-full"
+                onKeyPress={(e) => e.key === 'Enter' && userName && setIsEditingName(false)}
+              />
+              <button 
+                onClick={() => userName && setIsEditingName(false)}
+                className="bg-tiffany text-white px-4 py-1.5 rounded-full text-xs font-bold"
+              >
+                確認
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3 bg-white/50 px-5 py-2 rounded-full border border-clean-border">
+              <span className="text-sm font-medium text-clean-secondary">
+                <span className="text-tiffany font-bold">{userName}</span> 的覺察空間
+              </span>
+              <button 
+                onClick={() => setIsEditingName(true)}
+                className="text-[10px] text-clean-accent underline uppercase tracking-widest"
+              >
+                修改
+              </button>
+            </div>
+          )}
+        </div>
 
         <SectionHeading 
           title="每日正念簽到" 
